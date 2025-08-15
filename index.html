@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<title>Figma 单词记忆卡片 - 增强版</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #333;
+}
+
+.app-header {
+  text-align: center;
+  margin: 20px 0 30px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.app-header h1 {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  font-weight: 400;
+  margin-top: 5px;
+}
+
+.filter-controls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.filter-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 50px;
+  background: #ecf0f1;
+  color: #34495e;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.filter-btn.active {
+  background: #3498db;
+  color: white;
+  box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+}
+
+.filter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-container {
+  perspective: 1500px;
+  width: 100%;
+  max-width: 500px;
+  height: 320px;
+  margin-bottom: 30px;
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+}
+
+.card.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.card-front {
+  background: linear-gradient(135deg, #3498db 0%, #1a5f8e 100%);
+  color: white;
+}
+
+.card-back {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  color: white;
+  transform: rotateY(180deg);
+}
+
+.mastery-indicator {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.card-front .mastery-indicator {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.card-back .mastery-indicator {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.card.mastered .card-front {
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+}
+
+.card.mastered .card-back {
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+}
+
+.card-face::before {
+  content: attr(data-label);
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  font-weight: 600;
+}
+
+.card-front::before {
+  content: 'English';
+}
+
+.card-back::before {
+  content: '中文';
+}
+
+.card-content {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-top: 20px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  max-width: 90%;
+  word-wrap: break-word;
+  line-height: 1.3;
+}
+
+.card-footer {
+  font-size: 1.1rem;
+  color: #7f8c8d;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+.nav-controls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.primary-btn, .secondary-btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.primary-btn {
+  background: #3498db;
+  color: white;
+  flex: 1;
+}
+
+.secondary-btn {
+  background: #f39c12;
+  color: white;
+  flex: 1.5;
+}
+
+.primary-btn:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.secondary-btn:hover {
+  background: #e67e22;
+  transform: translateY(-2px);
+  box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.mastery-controls {
+  margin-bottom: 30px;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  justify-content: center;
+}
+
+.mastery-btn {
+  padding: 15px 40px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.master-btn {
+  background: #2ecc71;
+  color: white;
+}
+
+.unmaster-btn {
+  background: #e74c3c;
+  color: white;
+}
+
+.mastery-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.master-btn:hover {
+  background: #27ae60;
+}
+
+.unmaster-btn:hover {
+  background: #c0392b;
+}
+
+.word-counter {
+  background: white;
+  padding: 15px 25px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.word-counter span {
+  font-weight: 700;
+  color: #3498db;
+}
+
+.progress-container {
+  background: white;
+  border-radius: 16px;
+  padding: 25px;
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.progress-bar {
+  height: 16px;
+  background: #ecf0f1;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 25px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2ecc71, #3498db);
+  border-radius: 10px;
+  width: 0%;
+  transition: width 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.mastery-stats {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+}
+
+.stat-item {
+  flex: 1;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.stat-item div:last-child {
+  color: #7f8c8d;
+  font-size: 1rem;
+}
+
+.hint {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  padding: 18px 25px;
+  font-size: 1rem;
+  max-width: 500px;
+  text-align: center;
+  color: #7f8c8d;
+  line-height: 1.6;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.hint strong {
+  color: #2c3e50;
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+  .app-header h1 {
+    font-size: 2rem;
+  }
+  
+  .card-container {
+    height: 280px;
+  }
+  
+  .card-content {
+    font-size: 1.8rem;
+  }
+  
+  .nav-controls {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .mastery-stats {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .filter-controls {
+    flex-wrap: wrap;
+  }
+  
+  .filter-btn {
+    padding: 10px 18px;
+    font-size: 0.9rem;
+  }
+}
+
+.flip-hint {
+  position: absolute;
+  bottom: 20px;
+  font-size: 0.9rem;
+  opacity: 0.7;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+/* 新增的清除数据按钮样式 */
+.clear-data-btn {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: #95a5a6;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clear-data-btn:hover {
+  background: #7f8c8d;
+}
+</style>
+</head>
+<body>
+  <div class="app-header">
+    <h1>Figma 单词记忆卡片</h1>
+    <p class="subtitle">标记已掌握单词，追踪学习进度</p>
+  </div>
+
+  <div class="filter-controls">
+    <button class="filter-btn active" data-filter="all">全部单词</button>
+    <button class="filter-btn" data-filter="unmastered">未掌握</button>
+    <button class="filter-btn" data-filter="mastered">已掌握</button>
+  </div>
+
+  <div class="card-container">
+    <div class="card" id="card">
+      <div class="card-face card-front" id="front">
+        <div class="mastery-indicator" id="front-indicator">?</div>
+        <div class="card-content" id="front-content">Back to Files</div>
+        <div class="flip-hint">点击卡片翻转</div>
+      </div>
+      <div class="card-face card-back" id="back">
+        <div class="mastery-indicator" id="back-indicator">?</div>
+        <div class="card-content" id="back-content">回到文件</div>
+        <div class="flip-hint">点击卡片翻转</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card-footer" id="idx">1 / 0</div>
+  
+  <div class="nav-controls">
+    <button id="prev" class="primary-btn">上一条</button>
+    <button id="random" class="secondary-btn">随机单词</button>
+    <button id="next" class="primary-btn">下一条</button>
+  </div>
+
+  <div class="mastery-controls">
+    <button id="master-btn" class="mastery-btn master-btn">标记为已掌握</button>
+    <button id="unmaster-btn" class="mastery-btn unmaster-btn" style="display: none;">取消掌握</button>
+  </div>
+  
+  <div class="word-counter">
+    共 <span id="total-count">0</span> 个单词 | 当前是第 <span id="current-index">1</span> 个
+  </div>
+  
+  <div class="progress-container">
+    <div class="progress-header">
+      <span>掌握进度</span>
+      <span id="progress-percent">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="mastery-stats">
+      <div class="stat-item">
+        <div class="stat-number" id="mastered-count">0</div>
+        <div>已掌握</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" id="unmastered-count">0</div>
+        <div>未掌握</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" id="total-words">0</div>
+        <div>总计</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="hint">
+    <strong>使用提示：</strong> 点击卡片翻转查看中文释义，使用导航按钮切换单词。标记已掌握的单词来追踪学习进度。
+    <br>
+    <button id="clear-data" class="clear-data-btn">清除所有学习记录</button>
+  </div>
+
+<script>
+const wordPairs = [
+ {en:'File', zh:'文件'},
+{en:'New design file', zh:'新建设计文件'},
+{en:'New FigJam file', zh:'新建 FigJam 文件'},
+{en:'New from Sketch file...', zh:'从 Sketch 文件新建'},
+{en:'Place image...', zh:'置入图片'},
+{en:'Save local copy...', zh:'保存本地副本'},
+{en:'Save to version history', zh:'保存至历史版本'},
+{en:'Show version history', zh:'查看版本历史'},
+{en:'Export...', zh:'导出'},
+{en:'Export frames to PDF...', zh:'到处画框为 PDF'},
+{en:'Plugins', zh:'插件'},
+{en:'Integrations', zh:'集成'},
+{en:'Preferences', zh:'偏好设置'},
+{en:'Libraries', zh:'组件库'},
+{en:'Help and account', zh:'帮助与账户'},
+{en:'Edit', zh:'编辑'},
+{en:'Undo', zh:'撤销'},
+{en:'Redo', zh:'重做'},
+{en:'Copy as', zh:'复制为'},
+{en:'Copy as text', zh:'复制为文本'},
+{en:'Paste over selection', zh:'粘贴至所选位置'},
+{en:'Copy as CSS', zh:'复制为 CSS'},
+{en:'Paste to replace', zh:'粘贴替换'},
+{en:'Copy as SVG', zh:'复制为 SVG'},
+{en:'Duplicate', zh:'创建副本'},
+{en:'Copy as PNG', zh:'复制为 PNG'},
+{en:'Delete', zh:'删除'},
+{en:'Set default properties', zh:'设置默认属性'},
+{en:'Copy properties', zh:'复制属性'},
+{en:'Paste properties', zh:'粘贴属性'},
+{en:'Pick color', zh:'吸取颜色'},
+{en:'Select all', zh:'全选'},
+{en:'Select none', zh:'取消选择'},
+{en:'Select inverse', zh:'反选'},
+{en:'Select all with same properties', zh:'选择全部相同属性'},
+{en:'Select all with same fill', zh:'选择全部相同填充颜色'},
+{en:'Select all with same stroke', zh:'选择全部相同描边'},
+{en:'Select all with same effect', zh:'选择全部相同效果'},
+{en:'Select all with same text propert', zh:'选择全部相同文本属性'},
+{en:'Select all with same font', zh:'选择全部相同字体'},
+{en:'Select all with same instance', zh:'选择全部相同组件实例'},
+{en:'View', zh:'视图'},
+{en:'Pixel grid', zh:'像素网格'},
+{en:'Layout grids', zh:'布局网格'},
+{en:'Rulers', zh:'标尺'},
+{en:'Show slices', zh:'显示切片'},
+{en:'Comments', zh:'评论'},
+{en:'Outlines', zh:'轮廓'},
+{en:'Pixel preview', zh:'像素预览'},
+{en:'Mask outlines', zh:'蒙版轮廓'},
+{en:'Frame outlines', zh:'画板轮廓'},
+{en:'Resource use', zh:'资源使用情况'},
+{en:'Show/Hide UI', zh:'显示 / 隐藏界面'},
+{en:'Multiplayer cursors', zh:'多人鼠标指针'},
+{en:'Panels', zh:'画板'},
+{en:'Open layers panel', zh:'打开图层面板'},
+{en:'Zoom in', zh:'放大'},
+{en:'Libraries', zh:'组件库'},
+{en:'Zoom out', zh:'缩小'},
+{en:'Open design panel', zh:'打开设计面板'},
+{en:'Zoom to 100%', zh:'缩放至 100%'},
+{en:'Open prototype panel', zh:'打开原型面板'},
+{en:'Zoom to fit', zh:'缩放以适应大小'},
+{en:'Open inspect panel', zh:'打开检查面板'},
+{en:'Zoom to selection', zh:'缩放至选中范围'},
+{en:'Show left sidebar', zh:'显示左侧边栏'},
+{en:'Previous page', zh:'上一页'},
+{en:'Next page', zh:'下一页'},
+{en:'Zoom to previous frame', zh:'缩放上一个画框'},
+{en:'Zoom to next frame', zh:'缩放下一个画框'},
+{en:'Find previous frame', zh:'查找上一个画框'},
+{en:'Find next frame', zh:'查找下一个画框'},
+{en:'Object', zh:'对象'},
+{en:'Group selection', zh:'编组所选项'},
+{en:'Frame selection', zh:'添加画框'},
+{en:'Ungroup selection', zh:'取消编组所选项'},
+{en:'Use as mask', zh:'设为蒙版'},
+{en:'Restore default thumbn', zh:'恢复默认封面'},
+{en:'Add auto layout', zh:'添加自动布局'},
+{en:'Create component', zh:'创建组件'},
+{en:'Reset all overrides', zh:'重置所有覆盖'},
+{en:'Detach instance', zh:'分离实例'},
+{en:'Main component', zh:'组件母版'},
+{en:'Go to main component', zh:'转到组件母版'},
+{en:'Bring to front', zh:'移到顶层'},
+{en:'Push overrides to main co', zh:'覆盖组件母版'},
+{en:'Bring forward', zh:'上移一层'},
+{en:'Restore main component', zh:'恢复组件母版'},
+{en:'Send backward', zh:'下移一层'},
+{en:'Send to back', zh:'移到底层'},
+{en:'Flip horizontal', zh:'水平翻转'},
+{en:'Flip vertical', zh:'垂直翻转'},
+{en:'Rotate 180°', zh:'旋转 180°'},
+{en:'Rotate 90° left', zh:'向左旋转 90°'},
+{en:'Rotate 90° right', zh:'向右旋转 90°'},
+{en:'Flatten selection', zh:'拼合所选项'},
+{en:'Outline stroke', zh:'轮廓化描边'},
+{en:'Boolean groups', zh:'布尔组合'},
+{en:'Union selection', zh:'连集所选项'},
+{en:'Rasterize selection', zh:'像素化所选项'},
+{en:'Subtract selection', zh:'减去顶层所选项'},
+{en:'Show/Hide selection', zh:'显示 / 隐藏所选项'},
+{en:'Intersect selection', zh:'交集所选项'},
+{en:'Lock/Unlock selection', zh:'锁定 / 解锁所选项'},
+{en:'Exclude selection', zh:'差集所选项'},
+{en:'Hide other layers', zh:'隐藏其余图层'},
+{en:'Collapse layers', zh:'折叠图层'},
+{en:'Remove fill', zh:'移除填充'},
+{en:'Remove stroke', zh:'移除描边'},
+{en:'Swap fill and stroke', zh:'交换填充和描边'},
+{en:'Arrange', zh:'排列'},
+{en:'Round to pixel', zh:'对齐像素'},
+{en:'Align left', zh:'左对齐'},
+{en:'Align horizontal centers', zh:'水平居中'},
+{en:'Align right', zh:'右对齐'},
+{en:'Align top', zh:'上对齐'},
+{en:'Align vertical centers', zh:'垂直居中'},
+{en:'Align bottom', zh:'下对齐'},
+{en:'Tidy up', zh:'整理'},
+{en:'Pack horizontal', zh:'水平堆叠'},
+{en:'Pack vertical', zh:'垂直堆叠'},
+{en:'Distribute horizontal spa', zh:'水平间距均分'},
+{en:'Distribute vertical spa', zh:'垂直间距均分'},
+{en:'Distribute left', zh:'向左均分'},
+{en:'Distribute horizontal cen', zh:'水平中心均分'},
+{en:'Distribute right', zh:'向右均分'},
+{en:'Distribute top', zh:'向上均分'},
+{en:'Distribute vertical cen', zh:'垂直中心均分'},
+{en:'Distribute bottom', zh:'向下均分'},
+{en:'Plugins', zh:'插件'},
+{en:'Chinese Font Picker', zh:'中文字体选择器（插件名 ）'},
+{en:'Convertify Figma to Sketch/XD', zh:'Figma 转 Sketch/XD（插件名 ）'},
+{en:'Easometric', zh:'（插件名 ，无固定中文 ，可按功能理解为等距相关 ）'},
+{en:'Insert Big Image', zh:'插入大图片（插件名 ）'},
+{en:'Mesh Gradient', zh:'网格渐变（插件名 ）'},
+{en:'Mesh gradients', zh:'网格渐变（插件名 ，重复 ，可能不同功能分支 ）'},
+{en:'Mockuuups Studio', zh:'样机工作室（插件名 ）'},
+{en:'Noise', zh:'噪点（插件名 ）'},
+{en:'Remove BG', zh:'移除背景（插件名 ）'},
+{en:'SkewDat', zh:'（插件名 ，无固定中文 ，可按功能理解为数据倾斜等 ）'},
+{en:'Run last plugin', zh:'运行最后一个插件'},
+{en:'Manage plugins', zh:'管理插件'},
+{en:'Browse plugins', zh:'在社区中浏览插件'},
+{en:'Development', zh:'开发（插件开发相关 ）'},
+{en:'Preferences', zh:'偏好设置'},
+{en:'Snap to geometry', zh:'对齐到形状'},
+{en:'Snap to objects', zh:'对齐到对象'},
+{en:'Snap to pixel grid', zh:'对齐到像素'},
+{en:'Keep tool selected', zh:'使用后保持工具选择'},
+{en:'Highlight layers on hov', zh:'突出显示悬停图层'},
+{en:'Rename duplicated', zh:'重命名已创建完成的副本图层'},
+{en:'Show dimensions on ob', zh:'在对象上显示尺寸'},
+{en:'Hide canvas UI durin', zh:'再更改期间隐藏画布 UI'},
+{en:'Keyboard zooms in', zh:'键盘缩放所选项'},
+{en:'Substitute smart qu', zh:'智能引号替换'},
+{en:'Show Google Fonts', zh:'显示谷歌字体'},
+{en:'Flip objects while res', zh:'调整大小时翻转对象'},
+{en:'Invert zoom directio', zh:'反转缩放方向'},
+{en:'Use number keys fo', zh:'使用数字控制透明度'},
+{en:'Nudge amount...', zh:'单位微调'},
+{en:'Help and account', zh:'帮助和账户'},
+{en:'Help page', zh:'帮助界面'},
+{en:'Keyboard shortcuts', zh:'键盘快捷键'},
+{en:'Support forum', zh:'支持论坛'},
+{en:'Video tutorials', zh:'视频教程'},
+{en:'Release notes', zh:'版本说明'},
+{en:'Legal summary', zh:'法律摘要'},
+{en:'Account settings', zh:'账号设置'},
+{en:'Log out', zh:'退出'},
+{en:'Move', zh:'移动'},
+{en:'Frame', zh:'画框'},
+{en:'Scale', zh:'缩放'},
+{en:'Slice', zh:'切片'},
+{en:'Rectangle', zh:'矩形'},
+{en:'Line', zh:'直线'},
+{en:'Arrow', zh:'箭头'},
+{en:'Ellipse', zh:'椭圆'},
+{en:'Polygon', zh:'多边形'},
+{en:'Star', zh:'星形'},
+{en:'Place image', zh:'置入图片'},
+{en:'Pen', zh:'钢笔'},
+{en:'Pencil', zh:'铅笔'},
+{en:'Union selection', zh:'连集所选项'},
+{en:'Subtract selection', zh:'减去顶层所选项'},
+{en:'Intersect selection', zh:'交集所选项'},
+{en:'Exclude selection', zh:'差集所选项'},
+{en:'Flatten selection', zh:'拼合所选项'},
+{en:'Zoom in', zh:'放大'},
+{en:'Zoom out', zh:'缩小'},
+{en:'Zoom to fit', zh:'缩放以适应大小'},
+{en:'Zoom to 50%', zh:'缩放至 50%'},
+{en:'Zoom to 100%', zh:'缩放至 100%'},
+{en:'Zoom to 200%', zh:'缩放至 200%'},
+{en:'Pixel preview', zh:'像素预览'},
+{en:'Pixel grid', zh:'像素网格'},
+{en:'Snap to pixel grid', zh:'对齐到像素'},
+{en:'Layout grids', zh:'布局网格'},
+{en:'Rulers', zh:'标尺'},
+{en:'Outlines', zh:'轮廓'},
+{en:'Multiplayer cursors', zh:'多人鼠标指针'},
+{en:'Comments', zh:'评论'},
+{en:'Invite', zh:'邀请'},
+{en:'Publish to Community', zh:'发布到社区'},
+{en:'Anyone with the link', zh:'知道链接的任何人'},
+{en:'Copy link', zh:'复制链接'},
+{en:'Get embed code', zh:'获取嵌入代码'},
+{en:'Link to selected frame', zh:'连接到已选中的画框'},
+{en:'Send invite', zh:'发送邀请'},
+{en:'Layers', zh:'图层'},
+{en:'Assets', zh:'资产'},
+{en:'Page 1', zh:'页面 1'},
+{en:'Design', zh:'设计'},
+{en:'Prototype', zh:'原型'},
+{en:'Inspect', zh:'检查'},
+{en:'Clip content', zh:'剪切内容'},
+{en:'Auto layout', zh:'自动布局'},
+{en:'Layout grid', zh:'网格'},
+{en:'Layer', zh:'图层'},
+{en:'Pass through', zh:'穿透'},
+{en:'Normal', zh:'正常'},
+{en:'Darken', zh:'变暗'},
+{en:'Multiply', zh:'正片叠底'},
+{en:'Color burn', zh:'颜色加深'},
+{en:'Lighten', zh:'变亮'},
+{en:'Screen', zh:'滤色'},
+{en:'Color dodge', zh:'颜色减淡'},
+{en:'Overlay', zh:'叠加'},
+{en:'Soft light', zh:'柔光'},
+{en:'Hard light', zh:'强光'},
+{en:'Difference', zh:'差集'},
+{en:'Exclusion', zh:'排除'},
+{en:'Hue', zh:'色相'},
+{en:'Saturation', zh:'饱和度'},
+{en:'Color', zh:'颜色'},
+{en:'Luminosity', zh:'明度'},
+{en:'Fill', zh:'填充'},
+{en:'Stroke', zh:'描边'},
+{en:'Selection colors', zh:'选择的颜色'},
+{en:'Effects', zh:'效果'},
+{en:'Export', zh:'导出'},
+{en:'Copy', zh:'复制'},
+{en:'Paste here', zh:'粘贴至此处'},
+{en:'Paste to replace', zh:'粘贴替换'},
+{en:'Copy/Paste as', zh:'复制 / 粘贴为'},
+{en:'Copy as CSS', zh:'复制为 CSS'},
+{en:'Move to page', zh:'移到页面'},
+{en:'Copy as SVG', zh:'复制为 SVG'},
+{en:'Bring to front', zh:'移到顶层'},
+{en:'Copy as PNG', zh:'复制为 PNG'},
+{en:'Send to back', zh:'移到底层'},
+{en:'Copy properties', zh:'复制属性'},
+{en:'Group selection', zh:'编组所选项'},
+{en:'Paste properties', zh:'粘贴属性'},
+{en:'Frame selection', zh:'添加画框'},
+{en:'Flatten', zh:'拼合'},
+{en:'Outline stroke', zh:'轮廓化描边'},
+{en:'Use as mask', zh:'设为蒙版'},
+{en:'Add auto layout', zh:'添加自动布局'},
+{en:'Create component', zh:'创建组件'},
+{en:'Plugins', zh:'插件'},
+{en:'Manage plugins', zh:'管理插件'},
+{en:'Show/Hide', zh:'显示 / 隐藏'},
+{en:'Browse plugins in', zh:'在社区中浏览插件'},
+{en:'Lock/Unlock', zh:'锁定 / 解锁'},
+{en:'Development', zh:'开发'},
+{en:'Flip horizontal', zh:'水平翻转'},
+{en:'Flip vertical', zh:'垂直翻转'},
+{en:'Copy', zh:'复制'},
+{en:'Paste to replace', zh:'粘贴替换'},
+{en:'Copy/Paste as', zh:'复制 / 粘贴为'},
+{en:'Move to page', zh:'移到页面'},
+{en:'Bring to front', zh:'移到顶层'},
+{en:'Send to back', zh:'移到底层'},
+{en:'Group selection', zh:'编组所选项'},
+{en:'Frame selection', zh:'添加画框'},
+{en:'Rename', zh:'重命名'},
+{en:'Flatten', zh:'拼合'},
+{en:'Outline stroke', zh:'轮廓化描边'},
+{en:'Use as mask', zh:'设为蒙版'},
+{en:'Add auto layout', zh:'添加自动布局'},
+{en:'Create component', zh:'创建组件'},
+{en:'Plugins', zh:'插件'},
+{en:'Show/Hide', zh:'显示 / 隐藏'},
+{en:'Lock/Unlock', zh:'锁定 / 解锁'},
+{en:'Flip horizontal', zh:'水平翻转'},
+{en:'Flip vertical', zh:'垂直翻转'},
+{en:'Create component', zh:'创建为单个组件'},
+{en:'Create multiple components', zh:'创建为多个组件'},
+{en:'Create component set', zh:'创建为组件集'},
+{en:'Variants', zh:'变体'},
+{en:'Combine as variants', zh:'合并为变体'},
+{en:'Description', zh:'描述'},
+{en:'Documentation link', zh:'文档链接'},
+{en:'Add new variant', zh:'添加新变体'},
+{en:'Add new property', zh:'添加新属性'},
+{en:'Detach instance', zh:'分离实例'},
+{en:'Reset all overrides', zh:'重制所有覆盖'},
+{en:'Auto layout', zh:'添加自动布局效果'},
+{en:'Resizing', zh:'调整大小'},
+{en:'Fixed width', zh:'固定宽度'},
+{en:'Hug contents', zh:'适应内容'},
+{en:'Packed', zh:'堆叠'},
+{en:'Space between', zh:'等距'},
+{en:'Constraints', zh:'约束'},
+{en:'Left', zh:'左侧保持固定'},
+{en:'Right', zh:'右侧保持固定'},
+{en:'Left and right', zh:'左侧及右侧保持固定'},
+{en:'Center', zh:'中心'},
+{en:'Scale', zh:'缩放'},
+{en:'Fix position when scrolling', zh:'滚动时保持固定'}
+];
+
+let currentIndex = 0;
+let masteredSet = new Set();
+let filterMode = "all";
+
+// 从localStorage加载数据
+function loadFromLocalStorage() {
+  const savedMastered = localStorage.getItem('figmaVocabMastered');
+  if (savedMastered) {
+    try {
+      const parsed = JSON.parse(savedMastered);
+      masteredSet = new Set(parsed);
+    } catch (e) {
+      console.error('Failed to load data from localStorage', e);
+      masteredSet = new Set();
+    }
+  }
+  
+  // 加载上次的筛选模式
+  const savedFilter = localStorage.getItem('figmaVocabFilter');
+  if (savedFilter) {
+    filterMode = savedFilter;
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      if (btn.dataset.filter === filterMode) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+}
+
+// 保存数据到localStorage
+function saveToLocalStorage() {
+  try {
+    const masteredArray = Array.from(masteredSet);
+    localStorage.setItem('figmaVocabMastered', JSON.stringify(masteredArray));
+    localStorage.setItem('figmaVocabFilter', filterMode);
+  } catch (e) {
+    console.error('Failed to save data to localStorage', e);
+  }
+}
+
+// 清除所有数据
+function clearAllData() {
+  if (confirm('确定要清除所有学习记录吗？此操作不可恢复。')) {
+    masteredSet.clear();
+    localStorage.removeItem('figmaVocabMastered');
+    updateCard();
+  }
+}
+
+const card = document.getElementById("card");
+const frontContent = document.getElementById("front-content");
+const backContent = document.getElementById("back-content");
+const idxLabel = document.getElementById("idx");
+const prevBtn = document.getElementById("prev");
+const nextBtn = document.getElementById("next");
+const randomBtn = document.getElementById("random");
+const masterBtn = document.getElementById("master-btn");
+const unmasterBtn = document.getElementById("unmaster-btn");
+const progressFill = document.getElementById("progress-fill");
+const progressPercent = document.getElementById("progress-percent");
+const masteredCountEl = document.getElementById("mastered-count");
+const unmasteredCountEl = document.getElementById("unmastered-count");
+const totalWordsEl = document.getElementById("total-words");
+const currentIndexEl = document.getElementById("current-index");
+const totalCountEl = document.getElementById("total-count");
+const clearDataBtn = document.getElementById("clear-data");
+
+function updateCard() {
+  let list = getFilteredList();
+  if (list.length === 0) {
+    frontContent.textContent = "没有单词";
+    backContent.textContent = "请选择其他筛选条件";
+    idxLabel.textContent = "0 / 0";
+    masterBtn.style.display = "none";
+    unmasterBtn.style.display = "none";
+    return;
+  }
+  
+  currentIndex = Math.min(currentIndex, list.length - 1);
+  currentIndex = Math.max(currentIndex, 0);
+  
+  let { en, zh } = list[currentIndex];
+  frontContent.textContent = en;
+  backContent.textContent = zh;
+  idxLabel.textContent = `${currentIndex+1} / ${list.length}`;
+  currentIndexEl.textContent = currentIndex+1;
+  totalCountEl.textContent = list.length;
+
+  let isMastered = masteredSet.has(en);
+  // 更新掌握指示器
+  document.getElementById("front-indicator").textContent = isMastered ? "✓" : "?";
+  document.getElementById("back-indicator").textContent = isMastered ? "✓" : "?";
+  
+  card.classList.toggle("mastered", isMastered);
+  masterBtn.style.display = isMastered ? "none" : "flex";
+  unmasterBtn.style.display = isMastered ? "flex" : "none";
+
+  // 更新统计信息
+  const masteredCount = masteredSet.size;
+  const totalWords = wordPairs.length;
+  const unmasteredCount = totalWords - masteredCount;
+  
+  masteredCountEl.textContent = masteredCount;
+  unmasteredCountEl.textContent = unmasteredCount;
+  totalWordsEl.textContent = totalWords;
+  
+  let percent = totalWords > 0 ? ((masteredCount / totalWords) * 100) : 0;
+  progressPercent.textContent = percent.toFixed(1) + "%";
+  progressFill.style.width = percent.toFixed(1) + "%";
+  
+  // 每次更新卡片状态后保存数据
+  saveToLocalStorage();
+}
+
+function getFilteredList() {
+  if (filterMode === "mastered") {
+    return wordPairs.filter(w => masteredSet.has(w.en));
+  } else if (filterMode === "unmastered") {
+    return wordPairs.filter(w => !masteredSet.has(w.en));
+  }
+  return wordPairs;
+}
+
+card.addEventListener("click", () => {
+  card.classList.toggle("flipped");
+});
+
+nextBtn.addEventListener("click", () => {
+  let list = getFilteredList();
+  if (list.length === 0) return;
+  currentIndex = (currentIndex + 1) % list.length;
+  card.classList.remove("flipped");
+  updateCard();
+});
+
+prevBtn.addEventListener("click", () => {
+  let list = getFilteredList();
+  if (list.length === 0) return;
+  currentIndex = (currentIndex - 1 + list.length) % list.length;
+  card.classList.remove("flipped");
+  updateCard();
+});
+
+randomBtn.addEventListener("click", () => {
+  let list = getFilteredList();
+  if (list.length === 0) return;
+  currentIndex = Math.floor(Math.random() * list.length);
+  card.classList.remove("flipped");
+  updateCard();
+});
+
+masterBtn.addEventListener("click", () => {
+  let list = getFilteredList();
+  if (list.length === 0) return;
+  masteredSet.add(list[currentIndex].en);
+  updateCard();
+});
+
+unmasterBtn.addEventListener("click", () => {
+  let list = getFilteredList();
+  if (list.length === 0) return;
+  masteredSet.delete(list[currentIndex].en);
+  updateCard();
+});
+
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    filterMode = btn.dataset.filter;
+    currentIndex = 0;
+    card.classList.remove("flipped");
+    updateCard();
+  });
+});
+
+// 清除数据按钮事件
+clearDataBtn.addEventListener("click", clearAllData);
+
+// 初始化 - 先加载数据再更新卡片
+loadFromLocalStorage();
+totalWordsEl.textContent = wordPairs.length;
+updateCard();
+
+// 添加键盘快捷键
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') {
+    nextBtn.click();
+  } else if (e.key === 'ArrowLeft') {
+    prevBtn.click();
+  } else if (e.key === ' ') {
+    card.click();
+  } else if (e.key === 'r' || e.key === 'R') {
+    randomBtn.click();
+  } else if (e.key === 'm' || e.key === 'M') {
+    if (masterBtn.style.display !== 'none') {
+      masterBtn.click();
+    }
+  } else if (e.key === 'u' || e.key === 'U') {
+    if (unmasterBtn.style.display !== 'none') {
+      unmasterBtn.click();
+    }
+  }
+});
+</script>
+</body>
+</html>
